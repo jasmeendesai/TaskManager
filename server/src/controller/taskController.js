@@ -1,0 +1,133 @@
+const taskModel = require('../model/taskModel')
+// const UserModel = require("../model/UserModel");
+
+
+
+// Route 1 : create notes of logged in user using localhost:5000/api/notes/creteNotes
+const createTasks = async(req, res)=>{
+    try {
+        const userId = req.userId
+        const {title, description, tag} = req.body
+
+        if (!title || !description) {
+            return res
+              .status(400)
+              .send({ status: false, message: "Enter the required fields" });
+        }
+
+        req.body.user = userId
+        const createTask = await taskModel.create(req.body)
+        const {__v, user, ...data} = createTask._doc
+        return res.status(201).send({
+            status: true,
+            message: "Task Created Successfully",
+            data: data,
+          });
+}
+catch (error) {
+        return res.status(500).send({ status: false, message: error.message });
+    }
+}
+
+// Route 2 : get all notes of logged in user using localhost:5000/api/notes/getNotes
+const getTasks = async (req, res)=>{
+    try {
+        const userId = req.userId
+        const tasks = await taskModel.find({user : userId})
+
+        if(tasks.length===0){
+            return res.status(404).send({ status: false, message: "No tasks present"});
+        }
+
+        return res.status(200).send({
+            status: true,
+            message: "Tasks data",
+            data: tasks,
+        });
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message });
+    }
+
+}
+
+// Route 3 : update notes of logged in user using localhost:5000/api/notes/update/:id
+const updateTasks = async (req, res)=>{
+    try {
+        const taskId = req.params.id
+        const {title, description,status} = req.body
+
+     
+
+        const data = {} //update queries
+
+        if(title){ 
+            data.title = title
+        }
+        
+        if(description){
+            data.description = description
+        }
+        if(status && status.includes["Pending", "Completed"]){
+            data.status = status
+        }
+
+
+
+        const task = await taskModel.findById(taskId)
+        if(!task){
+            return res.status(404).send({ status: false, message: "task not found"})
+        }
+        
+        //user authorisation
+
+        const userLoggedIn = req.userId
+        const userToBeModify = task.user.toString()
+        if(userLoggedIn!==userToBeModify){
+            return res.status(403).send({ status: false, message: "you are not authorised" });
+        }
+        
+        //update task
+        const updatedNote = await taskModel.findByIdAndUpdate(taskId, data, {new : true}).select({_id : 0, __v : 0, user : 0})
+
+        return res.status(200).send({ status: true, message: "task is updated", data : updatedNote})
+
+
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message });
+    }
+}
+
+// Route 4 : delete notes of logged in user using localhost:5000/api/notes/delete/:id
+
+const deleteTasks = async (req, res) =>{
+    try {
+        const noteId = req.params.id
+
+        if(!isValidObjectId(noteId)){
+            return res.status(400).send({ status: false, message: "invalid notesid"})
+        }
+
+        const note = await taskModel.findById(noteId)
+        if(!note){
+            return res.status(404).send({ status: false, message: "note not found"})
+        }
+        
+        //user authorisation
+
+        const userLoggedIn = req.userId
+        const userToBeModify = note.user.toString()
+        if(userLoggedIn!==userToBeModify){
+            return res.status(403).send({ status: false, message: "you are not authorised" });
+        }
+        
+        await taskModel.findByIdAndDelete(noteId)
+
+        return res.status(200).send({ status: true, message: "note is deleted successfully" });
+
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message });
+    }
+}
+
+
+module.exports = {createTasks, getTasks, updateTasks, deleteTasks}
