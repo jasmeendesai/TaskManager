@@ -114,24 +114,5 @@ const login = async (req, res) => {
   }
 };
 
-//Route 3 - Get User detail - login required
 
-const getUser = async (req, res)=>{
-    try{
-        const userId = req.userId
-        const user = await UserModel.findById(userId).select({password : 0, _id :0, __v : 0})
-        if(!user){
-            return res
-        .status(404)
-        .send({ status: false, message: "User not found" }); 
-        }
-        return res
-      .status(200)
-      .send({ status: true, message: "User Data" , data : user}); 
-
-    }
-    catch (error) {
-        return res.status(500).send({ status: false, message: error.message });
-    }
-}
-module.exports = { register, login, getUser };
+module.exports = { register, login };

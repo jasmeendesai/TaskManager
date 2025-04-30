@@ -33,7 +33,21 @@ catch (error) {
 const getTasks = async (req, res)=>{
     try {
         const userId = req.userId
-        const tasks = await taskModel.find({user : userId})
+        const {status} = req.query
+
+        console.log(status)
+
+        let filter = {
+            user : userId
+        }
+
+        if(status && ["Pending", "Completed"].includes(status)) filter.status = status
+
+        console.log(filter)
+
+        const tasks = await taskModel.find(filter)
+
+        console.log(tasks)
 
         if(tasks.length===0){
             return res.status(404).send({ status: false, message: "No tasks present"});
@@ -54,7 +68,8 @@ const getTasks = async (req, res)=>{
 const updateTasks = async (req, res)=>{
     try {
         const taskId = req.params.id
-        const {title, description,status} = req.body
+        const {title, description, status} = req.body
+
 
      
 
@@ -67,11 +82,9 @@ const updateTasks = async (req, res)=>{
         if(description){
             data.description = description
         }
-        if(status && status.includes["Pending", "Completed"]){
+        if(status && ["Pending", "Completed"].includes(status)){
             data.status = status
         }
-
-
 
         const task = await taskModel.findById(taskId)
         if(!task){
@@ -101,28 +114,24 @@ const updateTasks = async (req, res)=>{
 
 const deleteTasks = async (req, res) =>{
     try {
-        const noteId = req.params.id
+        const taskId = req.params.id
 
-        if(!isValidObjectId(noteId)){
-            return res.status(400).send({ status: false, message: "invalid notesid"})
-        }
-
-        const note = await taskModel.findById(noteId)
-        if(!note){
-            return res.status(404).send({ status: false, message: "note not found"})
+        const task = await taskModel.findById(taskId)
+        if(!task){
+            return res.status(404).send({ status: false, message: "task not found"})
         }
         
         //user authorisation
 
         const userLoggedIn = req.userId
-        const userToBeModify = note.user.toString()
+        const userToBeModify = task.user.toString()
         if(userLoggedIn!==userToBeModify){
             return res.status(403).send({ status: false, message: "you are not authorised" });
         }
         
-        await taskModel.findByIdAndDelete(noteId)
+        await taskModel.findByIdAndDelete(taskId)
 
-        return res.status(200).send({ status: true, message: "note is deleted successfully" });
+        return res.status(200).send({ status: true, message: "task is deleted successfully" });
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message });
