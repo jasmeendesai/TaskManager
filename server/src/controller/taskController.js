@@ -3,7 +3,7 @@ const taskModel = require('../model/taskModel')
 
 
 
-// Route 1 : create notes of logged in user using localhost:5000/api/notes/creteNotes
+// Route 1 : create tasks of logged in user 
 const createTasks = async(req, res)=>{
     try {
         const userId = req.userId
@@ -29,7 +29,7 @@ catch (error) {
     }
 }
 
-// Route 2 : get all notes of logged in user using localhost:5000/api/notes/getNotes
+// Route 2 : get all tasks of logged in user
 const getTasks = async (req, res)=>{
     try {
         const userId = req.userId
@@ -64,7 +64,7 @@ const getTasks = async (req, res)=>{
 
 }
 
-// Route 3 : update notes of logged in user using localhost:5000/api/notes/update/:id
+// Route 3 : update tasks of logged in user 
 const updateTasks = async (req, res)=>{
     try {
         const taskId = req.params.id
@@ -110,8 +110,7 @@ const updateTasks = async (req, res)=>{
     }
 }
 
-// Route 4 : delete notes of logged in user using localhost:5000/api/notes/delete/:id
-
+// Route 4 : delete tasks of logged in user 
 const deleteTasks = async (req, res) =>{
     try {
         const taskId = req.params.id
