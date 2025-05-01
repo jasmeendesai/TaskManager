@@ -1,4 +1,4 @@
-# Task Manager App (React + Bootstrap)
+# Task Manager App
 
 This is a simple task management app built with **React** and styled using **Bootstrap 5**. It supports creating, editing, deleting, and filtering tasks based on their status.
 
